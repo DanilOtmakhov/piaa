@@ -1,3 +1,3 @@
-# Лабораторные работы по дисциплине "Построение и анализ алгоритмов"
+# Laboratory works for the course "Building and Analyzing Algorithms"
 
-Данный репозиторий содержит решения лабораторных работ по дисциплине "Построение и анализ алгоритмов".
+This repository contains solutions to laboratory works for the course "Building and Analyzing Algorithms".
