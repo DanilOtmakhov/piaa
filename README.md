@@ -5,3 +5,4 @@ This repository contains solutions to laboratory works for the course "Building 
 ## Repository Structure
 
 - `lab1/` - Backtracking
+- `lab4/` - Knuth–Morris–Pratt algorithm
