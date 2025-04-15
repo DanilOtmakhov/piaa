@@ -97,7 +97,7 @@ public:
 
         int index = matcher.searchFirst(doubled);
 
-        if (index != -1 && index < static_cast<int>(pattern.size())) {
+        if (index != -1 && index < (int)(pattern.size())) {
             return index;
         }
 
