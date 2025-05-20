@@ -48,21 +48,43 @@ func buildEditDistanceMatrix(costs: Costs, source: String, target: String) -> [[
     }
     
     print("Initial Matrix:")
-    printMatrix(dp)
+    printMatrix(dp, source: source, target: target)
     
     for i in 1...n {
         for j in 1...m {
+            print("Processing dp[\(i)][\(j)] for characters '\(a[i - 1])' (source[\(i - 1)]) and '\(b[j - 1])' (target[\(j - 1)])")
+            
             if a[i - 1] == b[j - 1] {
                 dp[i][j] = dp[i - 1][j - 1]
+                print("  Characters match, copying value from dp[\(i - 1)][\(j - 1)] = \(dp[i][j])")
             } else {
-                let replace = dp[i - 1][j - 1] + costs.replace
-                let insert = dp[i][j - 1] + costs.insert
-                let delete = dp[i - 1][j] + costs.delete
-                dp[i][j] = min(replace, insert, delete)
+                let costReplace = dp[i - 1][j - 1] + costs.replace
+                let costInsert = dp[i][j - 1] + costs.insert
+                let costDelete = dp[i - 1][j] + costs.delete
+                
+                print("""
+                    Characters differ:
+                     - Replace: dp[\(i - 1)][\(j - 1)] + replace(\(costs.replace)) = \(costReplace)
+                     - Insert:  dp[\(i)][\(j - 1)] + insert(\(costs.insert)) = \(costInsert)
+                     - Delete:  dp[\(i - 1)][\(j)] + delete(\(costs.delete)) = \(costDelete)
+                    """)
+                
+                dp[i][j] = min(costReplace, costInsert, costDelete)
+                let operation: String
+                if dp[i][j] == costReplace {
+                    operation = "replace"
+                } else if dp[i][j] == costInsert {
+                    operation = "insert"
+                } else {
+                    operation = "delete"
+                }
+                print("  Selected operation: \(operation), dp[\(i)][\(j)] = \(dp[i][j])")
             }
+            print()
         }
-        print("Matrix after row \(i):")
-        printMatrix(dp)
+        
+        print("Matrix after processing row \(i) ('\(a[i - 1])'):")
+        printMatrix(dp, source: source, target: target)
     }
     
     return dp
@@ -86,22 +108,22 @@ func editDistanceWithTrace(costs: Costs, source: String, target: String) -> (ope
     while i > 0 || j > 0 {
         if i > 0 && j > 0 && a[i - 1] == b[j - 1] {
             operations.append(.match)
-            print("Match: \(a[i - 1]) == \(b[j - 1])")
+            print("M(\(i), \(j)) — Match '\(a[i - 1])'")
             i -= 1
             j -= 1
         } else {
             if i > 0 && j > 0 && dp[i][j] == dp[i - 1][j - 1] + costs.replace {
                 operations.append(.replace)
-                print("Replace: \(a[i - 1]) -> \(b[j - 1])")
+                print("R(\(i), \(j)) — Replace '\(a[i - 1])' with '\(b[j - 1])'")
                 i -= 1
                 j -= 1
             } else if j > 0 && dp[i][j] == dp[i][j - 1] + costs.insert {
                 operations.append(.insert)
-                print("Insert: \(b[j - 1])")
+                print("I(\(i), \(j)) — Insert '\(b[j - 1])'")
                 j -= 1
             } else if i > 0 && dp[i][j] == dp[i - 1][j] + costs.delete {
                 operations.append(.delete)
-                print("Delete: \(a[i - 1])")
+                print("D(\(i), \(j)) — Delete '\(a[i - 1])'")
                 i -= 1
             }
         }
@@ -152,9 +174,17 @@ func longestCommonSubstring(_ source: String, _ target: String) -> (length: Int,
 }
 
 
-func printMatrix(_ matrix: [[Int]]) {
-    for row in matrix {
-        print(row.map { String($0) }.joined(separator: "\t"))
+func printMatrix(_ matrix: [[Int]], source: String, target: String) {
+    let a = Array(source)
+    let b = Array(target)
+    
+    let header = "\t\t" + b.map { String($0) }.joined(separator: "\t")
+    print(header)
+    
+    for (i, row) in matrix.enumerated() {
+        let prefix = i == 0 ? "-" : String(a[i - 1])
+        let line = row.map { String($0) }.joined(separator: "\t")
+        print("\(prefix)\t\(line)")
     }
     print()
 }
