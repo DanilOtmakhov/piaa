@@ -96,41 +96,73 @@ func editDistanceWithTrace(costs: Costs, source: String, target: String) -> (ope
     let b = Array(target)
     let n = a.count
     let m = b.count
-    
+
     let dp = buildEditDistanceMatrix(costs: costs, source: source, target: target)
-    
+
     var operations: [EditOperation] = []
     var i = n
     var j = m
-    
+
     print("Tracing back operations:")
-    
+    print("Starting from dp[\(i)][\(j)] = \(dp[i][j])")
+
     while i > 0 || j > 0 {
+        print("At position dp[\(i)][\(j)]")
+
         if i > 0 && j > 0 && a[i - 1] == b[j - 1] {
             operations.append(.match)
-            print("M(\(i), \(j)) — Match '\(a[i - 1])'")
+            print("  Characters match: '\(a[i - 1])' == '\(b[j - 1])'")
+            print("  Move diagonally to dp[\(i - 1)][\(j - 1)] = \(dp[i - 1][j - 1])")
             i -= 1
             j -= 1
         } else {
-            if i > 0 && j > 0 && dp[i][j] == dp[i - 1][j - 1] + costs.replace {
-                operations.append(.replace)
-                print("R(\(i), \(j)) — Replace '\(a[i - 1])' with '\(b[j - 1])'")
-                i -= 1
-                j -= 1
-            } else if j > 0 && dp[i][j] == dp[i][j - 1] + costs.insert {
-                operations.append(.insert)
-                print("I(\(i), \(j)) — Insert '\(b[j - 1])'")
-                j -= 1
-            } else if i > 0 && dp[i][j] == dp[i - 1][j] + costs.delete {
-                operations.append(.delete)
-                print("D(\(i), \(j)) — Delete '\(a[i - 1])'")
-                i -= 1
+            var candidates: [(op: EditOperation, cost: Int, desc: String)] = []
+
+            if i > 0 && j > 0 {
+                let cost = dp[i - 1][j - 1] + costs.replace
+                candidates.append((.replace, cost, "Replace '\(a[i - 1])' with '\(b[j - 1])'"))
+            }
+
+            if j > 0 {
+                let cost = dp[i][j - 1] + costs.insert
+                candidates.append((.insert, cost, "Insert '\(b[j - 1])'"))
+            }
+
+            if i > 0 {
+                let cost = dp[i - 1][j] + costs.delete
+                candidates.append((.delete, cost, "Delete '\(a[i - 1])'"))
+            }
+
+            for candidate in candidates {
+                print("  Option \(candidate.op.rawValue): \(candidate.desc) = \(candidate.cost)")
+            }
+
+            if let selected = candidates.first(where: { dp[i][j] == $0.cost }) {
+                operations.append(selected.op)
+                print("  Selected operation: \(selected.op.rawValue) — \(selected.desc)")
+                switch selected.op {
+                case .replace:
+                    i -= 1
+                    j -= 1
+                case .insert:
+                    j -= 1
+                case .delete:
+                    i -= 1
+                default:
+                    break
+                }
+            } else {
+                print("  Unexpected state at dp[\(i)][\(j)], no matching operation found.")
+                break
             }
         }
+
+        print("  Current operations: \(operations.reversed().map { $0.rawValue }.joined())")
+        print()
     }
-    
+
     let operationsString = operations.reversed().map { $0.rawValue }.joined()
-    
+
     return (operationsString, source, target)
 }
 

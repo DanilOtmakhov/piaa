@@ -35,7 +35,7 @@ let costs = Costs(
 )
 
 let (operations, alignedSource, alignedTarget) = editDistanceWithTrace(costs: costs, source: source, target: target)
-print("Edit operations sequence: \(operations)")
+print("Edit operations sequence: \(operations)\n")
 
 let distance = levenshteinDistance(costs: costs, source: source, target: target)
 print("Levenshtein distance: \(distance)")
